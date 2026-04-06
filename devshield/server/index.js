@@ -12,6 +12,19 @@ const app = express();
 app.use(cors({ origin: 'http://localhost:5173' }));
 app.use(express.json());
 
+// Routes
+import authRoutes from './routes/auth.js';
+import taskRoutes from './routes/tasks.js';
+import scenariosRoutes from './routes/scenarios.js';
+import usersRoutes from './routes/users.js';
+import aiRoutes from './routes/ai.js';
+
+app.use('/api/auth', authRoutes);
+app.use('/api/users', usersRoutes);
+app.use('/api/tasks', taskRoutes);
+app.use('/api/scenarios', scenariosRoutes);
+app.use('/api/ai', aiRoutes);
+
 // Basic health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date() });
@@ -19,7 +32,6 @@ app.get('/api/health', (req, res) => {
 
 // Import route definitions (these files will be created next)
 // import authRoutes from './routes/auth.js';
-// import tasksRoutes from './routes/tasks.js';
 // import scenariosRoutes from './routes/scenarios.js';
 // import usersRoutes from './routes/users.js';
 // import aiRoutes from './routes/ai.js';
@@ -35,11 +47,17 @@ app.get('/api/health', (req, res) => {
 const PORT = process.env.PORT || 3001;
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/devshield';
 
+const startServer = () => {
+  app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+};
+
 mongoose.connect(MONGO_URI)
   .then(() => {
     console.log('✅ Connected to MongoDB');
-    app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+    startServer();
   })
   .catch(err => {
     console.error('❌ MongoDB Connection Error:', err.message);
+    console.log('⚠️ Running in In-Memory Fallback Mode (Scores will NOT persist after restart)');
+    startServer();
   });
